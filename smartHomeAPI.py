@@ -28,3 +28,11 @@ def create_user(user: User):
     user = User(id=user_id, name=user.name, phone_number=user.phone_number, email=user.email)
     users[user_id] = user
     return user
+
+@app.get("/users/{user_id}", response_model=User)
+def get_user(user_id: str):
+
+    if user_id not in users:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return users[user_id]
