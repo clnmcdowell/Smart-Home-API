@@ -16,6 +16,8 @@ class User(BaseModel):
 users = {}
 
 ## USER API
+
+# Creates new user with optional ID
 @app.post("/users", response_model=User)
 def create_user(user: User):
     user_id = user.id if user.id else str(uuid.uuid4()) # Generate random ID if not provided by client
@@ -29,10 +31,21 @@ def create_user(user: User):
     users[user_id] = user
     return user
 
+# Get user by ID
 @app.get("/users/{user_id}", response_model=User)
 def get_user(user_id: str):
 
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     return users[user_id]
+
+# Update user information (for stub it just copies a different user)
+@app.put("/users/{user_id}", response_model=User)
+def update_user(user_id: str, updated_user: User):
+
+    if user_id not in users:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    users[user_id] = updated_user
+    return updated_user
