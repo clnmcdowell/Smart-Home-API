@@ -5,19 +5,24 @@ from typing import Optional
 
 app = FastAPI()
 
-## CLASSES
-
+## CLASSES ##
 class User(BaseModel):
     id: Optional[str] = None
     name: str = Field(min_length=1, description="User's full name")
     phone_number: str = Field(min_length=10, max_length=10,description="Phone number in format XXXXXXXXXX")
     email: EmailStr # Validates email address
 
-## DATA STORAGE
+class Device(BaseModel):
+    id: Optional[str] = None
+    name: str = Field(min_length=1, description="Device name")
+    type: str = Field(min_length=1, description="Device type (TV, Thermometer, etc.)")
+    room_id: str = Field(min_length=1, description="ID of the room the device belongs to")
+
+
+## DATA STORAGE ##
 users = {}
 
-## USER API
-
+## USER API ##
 # Creates new user with optional ID
 @app.post("/users", response_model=User)
 def create_user(user: User):
@@ -54,9 +59,11 @@ def update_user(user_id: str, updated_user: User):
 # Delete user by ID
 @app.delete("/users/{user_id}")
 def delete_user(user_id: str):
-    
+
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
     del users[user_id]
     return {"message": "User deleted successfully"}
+
+## DEVICE API ##
