@@ -1,11 +1,12 @@
 from fastapi import FastAPI,  HTTPException # API framework
 from pydantic import BaseModel, Field, EmailStr # Validation library
 import uuid
-from typing import Optional
+from typing import Optional, List
 
 app = FastAPI()
 
 ## CLASSES ##
+# Field() does input validation on creation
 class User(BaseModel):
     id: Optional[str] = None # Automatically generated if not provided
     name: str = Field(min_length=1, description="User's full name")
@@ -25,10 +26,18 @@ class Room(BaseModel):
     size: float = Field(gt=0, description="Room size in square feet")
     house_id: str = Field(min_length=1, description="ID of the house the room belongs to")
 
+class House(BaseModel):
+    id: Optional[str] = None  # Automatically generated if not provided
+    name: str = Field(min_length=1, description="House name")
+    address: str = Field(min_length=1, description="House address")
+    owners: List[str] = Field(default=[], description="List of owner IDs")
+    occupants: List[str] = Field(default=[], description="List of occupant IDs")
+
 ## DATA STORAGE ##
 users = {}
 devices = {}
 rooms = {}
+houses = {}
 
 ## USER API ##
 # Creates new user with optional ID
@@ -71,6 +80,8 @@ def delete_user(user_id: str):
     del users[user_id]
     return {"message": "User deleted successfully"}
 
+
+
 ## DEVICE API ##
 # Create device
 @app.post("/devices", response_model=Device)
@@ -108,6 +119,8 @@ def delete_device(device_id: str):
 
     del devices[device_id]
     return {"message": "Device deleted successfully"}
+
+
 
 ## ROOM API ##
 # Create Room
@@ -147,3 +160,44 @@ def delete_room(room_id: str):
 
     del rooms[room_id]
     return {"message": "Room deleted successfully"}
+
+
+
+## HOUSE API ##
+# Create house
+@app.post("/houses", response_model=House)
+def create_house(house: House):
+    house_id = house.id if house.id else str(uuid.uuid4())
+
+    if house_id in houses:
+        raise HTTPException(status_code=400, detail="House ID already exists")
+
+    house = House(id=house_id, name=house.name, address=house.address, owners=house.owners, occupants=house.occupants)
+    houses[house_id] = house
+    return house
+
+# Get house
+@app.get("/houses/{house_id}", response_model=House)
+def get_house(house_id: str):
+    if house_id not in houses:
+        raise HTTPException(status_code=404, detail="House not found")
+    
+    return houses[house_id]
+
+# Update house
+@app.put("/houses/{house_id}", response_model=House)
+def update_house(house_id: str, updated_house: House):
+    if house_id not in houses:
+        raise HTTPException(status_code=404, detail="House not found")
+
+    houses[house_id] = updated_house
+    return updated_house
+
+# Delete house
+@app.delete("/houses/{house_id}")
+def delete_house(house_id: str):
+    if house_id not in houses:
+        raise HTTPException(status_code=404, detail="House not found")
+
+    del houses[house_id]
+    return {"message": "House deleted successfully"}
