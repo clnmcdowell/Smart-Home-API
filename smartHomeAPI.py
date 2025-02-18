@@ -7,20 +7,28 @@ app = FastAPI()
 
 ## CLASSES ##
 class User(BaseModel):
-    id: Optional[str] = None
+    id: Optional[str] = None # Automatically generated if not provided
     name: str = Field(min_length=1, description="User's full name")
     phone_number: str = Field(min_length=10, max_length=10,description="Phone number in format XXXXXXXXXX")
     email: EmailStr # Validates email address
 
 class Device(BaseModel):
-    id: Optional[str] = None
+    id: Optional[str] = None # Automatically generated if not provided
     name: str = Field(min_length=1, description="Device name")
     type: str = Field(min_length=1, description="Device type (TV, Thermometer, etc.)")
     room_id: str = Field(min_length=1, description="ID of the room the device belongs to")
 
+class Room(BaseModel):
+    id: Optional[str] = None # Automatically generated if not provided
+    name: str = Field(min_length=1, description="Room name")
+    type: str = Field(min_length=1, description="Room type (bedroom, kitchen, etc)")
+    size: float = Field(gt=0, description="Room size in square feet")
+    house_id: str = Field(min_length=1, description="ID of the house the room belongs to")
 
 ## DATA STORAGE ##
 users = {}
+devices = {}
+rooms = {}
 
 ## USER API ##
 # Creates new user with optional ID
@@ -100,3 +108,42 @@ def delete_device(device_id: str):
 
     del devices[device_id]
     return {"message": "Device deleted successfully"}
+
+## ROOM API ##
+# Create Room
+@app.post("/rooms", response_model=Room)
+def create_room(room: Room):
+    room_id = room.id if room.id else str(uuid.uuid4())
+
+    if room_id in rooms:
+        raise HTTPException(status_code=400, detail="Room ID already exists")
+
+    room = Room(id=room_id, name=room.name, type=room.type, size=room.size, house_id=room.house_id)
+    rooms[room_id] = room
+    return room
+
+# Get room by ID
+@app.get("/rooms/{room_id}", response_model=Room)
+def get_room(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    return rooms[room_id]
+
+# Update room
+@app.put("/rooms/{room_id}", response_model=Room)
+def update_room(room_id: str, updated_room: Room):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    rooms[room_id] = updated_room
+    return updated_room
+
+# Delete room
+@app.delete("/rooms/{room_id}")
+def delete_room(room_id: str):
+    if room_id not in rooms:
+        raise HTTPException(status_code=404, detail="Room not found")
+
+    del rooms[room_id]
+    return {"message": "Room deleted successfully"}
