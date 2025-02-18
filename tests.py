@@ -65,7 +65,9 @@ def test_update_user():
     updated_user = update_response.json()
 
     # Check that user was updated correctly 
+    assert updated_user["id"] == user_id
     assert updated_user["name"] == "Bobby"
+    assert updated_user["phone_number"] == "5555555555"
     assert updated_user["email"] == "bobby@aol.com"
 
 # Test deleting a user
@@ -155,6 +157,8 @@ def test_update_device():
     update_response = client.put(f"/devices/{device_id}", json=updated_data)
     assert update_response.status_code == 200
     updated_device = update_response.json()
+    assert updated_device["id"] == device_id
+    assert updated_device["name"] == "Living Room TV"
     assert updated_device["room_id"] == "room4"
     assert updated_device["type"] == "Samsung TV"
 
@@ -250,8 +254,10 @@ def test_update_room():
     update_response = client.put(f"/rooms/{room_id}", json=updated_data)
     assert update_response.status_code == 200
     updated_room = update_response.json()
+    assert updated_room["id"] == room_id
     assert updated_room["name"] == "Master bedroom"
     assert updated_room["size"] == 312.5
+    assert updated_room["house_id"] == "house123"
 
 # Test deleting a room
 def test_delete_room():
@@ -275,3 +281,100 @@ def test_delete_room():
     # Verify room is deleted
     get_response = client.get(f"/rooms/{room_id}")
     assert get_response.status_code == 404 
+
+
+## HOUSE TESTS ##
+# Test creating a house
+def test_create_house():
+    house_data = {
+        "name": "College Apartment ",
+        "address": "1 Mass Ave, APT 1, Boston",
+        "owners": ["Landlord Paul"],
+        "occupants": ["Colin", "Brianna"]
+    }
+    
+    # Create house
+    response = client.post("/houses", json=house_data)
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert "id" in data
+    assert data["name"] == house_data["name"]
+    assert data["address"] == house_data["address"]
+    assert data["owners"] == house_data["owners"]
+    assert data["occupants"] == house_data["occupants"]
+
+# Test getting a house
+def test_get_house():
+    house_data = {
+        "name": "College Apartment ",
+        "address": "1 Mass Ave, APT 1, Boston",
+        "owners": ["Landlord Paul"],
+        "occupants": ["Colin", "Brianna"]
+    }
+
+    # Create house
+    create_response = client.post("/houses", json=house_data)
+    assert create_response.status_code == 200
+    house_id = create_response.json()["id"]
+
+    # Get house
+    get_response = client.get(f"/houses/{house_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["id"] == house_id
+    assert data["name"] == house_data["name"]
+
+# Test updating a house
+def test_update_house():
+    house_data = {
+        "name": "College Apartment ",
+        "address": "1 Mass Ave, APT 1, Boston",
+        "owners": ["Landlord Paul"],
+        "occupants": ["Colin", "Brianna"]
+    }
+
+    # Create house
+    create_response = client.post("/houses", json=house_data)
+    assert create_response.status_code == 200
+    house_id = create_response.json()["id"]
+
+    updated_data = {
+        "id": house_id,
+        "name": "Postgrad Apartment",
+        "address": "1 Mass Ave, APT 1, Boston",
+        "owners": ["Landlord Paul"],
+        "occupants": ["Colin"]
+    }
+    
+    # Update house
+    update_response = client.put(f"/houses/{house_id}", json=updated_data)
+    assert update_response.status_code == 200
+    updated_house = update_response.json()
+    assert updated_house["id"] == house_id
+    assert updated_house["name"] == "Postgrad Apartment"
+    assert updated_house["address"] == "1 Mass Ave, APT 1, Boston"
+    assert updated_house["owners"] == ["Landlord Paul"]
+    assert updated_house["occupants"] == ["Colin"]
+
+def test_delete_house():
+    house_data = {
+        "name": "College Apartment ",
+        "address": "1 Mass Ave, APT 1, Boston",
+        "owners": ["Landlord Paul"],
+        "occupants": ["Colin", "Brianna"]
+    }
+
+    # Create house
+    create_response = client.post("/houses", json=house_data)
+    assert create_response.status_code == 200
+    house_id = create_response.json()["id"]
+
+    # Delete house
+    delete_response = client.delete(f"/houses/{house_id}")
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {"message": "House deleted successfully"}
+
+    # Verify house is deleted
+    get_response = client.get(f"/houses/{house_id}")
+    assert get_response.status_code == 404
