@@ -5,7 +5,6 @@ import uuid
 client = TestClient(app)  # Test client to make API requests
 
 ## USER TESTS ##
-
 # Test creating a user
 def test_create_user():
     user_data = {
@@ -16,6 +15,7 @@ def test_create_user():
 
     response = client.post("/users", json=user_data) # API request to create user
     assert response.status_code == 200 # 200 response code means OK
+
     data = response.json()
     assert "id" in data  # ID should be generated
     assert data["name"] == user_data["name"]
@@ -32,7 +32,7 @@ def test_get_user():
 
     # Get the user
     create_response = client.post("/users", json=user_data)
-    assert create_response.status_code == 200
+    assert create_response.status_code == 200 # Ensure successful creation
     user_id = create_response.json()["id"]
 
     get_response = client.get(f"/users/{user_id}")
@@ -90,92 +90,188 @@ def test_delete_user():
     get_response = client.get(f"/users/{user_id}")
     assert get_response.status_code == 404  # User should no longer exist
 
-    ## DEVICE TESTS ##
-    # Test creating a device
 
-    # Test Creating a device
-    def test_create_device():
-        device_data = {
-            "name": "Living Room TV",
-            "type": "TV",
-            "room_id": "room123"
-        }
-        
-        # Create device
-        response = client.post("/devices", json=device_data)
-        assert response.status_code == 200
-        
-        data = response.json()
-        assert "id" in data
-        assert data["name"] == device_data["name"]
-        assert data["type"] == device_data["type"]
-        assert data["room_id"] == device_data["room_id"]
 
-    # Test getting a device
-    def test_get_device():
-        device_data = {
-            "name": "Living Room TV",
-            "type": "TV",
-            "room_id": "room123"
-        }
+## DEVICE TESTS ##
+# Test Creating a device
+def test_create_device():
+    device_data = {
+        "name": "Living Room TV",
+        "type": "TV",
+        "room_id": "room123"
+    }
+    
+    # Create device
+    response = client.post("/devices", json=device_data)
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert "id" in data
+    assert data["name"] == device_data["name"]
+    assert data["type"] == device_data["type"]
+    assert data["room_id"] == device_data["room_id"]
 
-        # Create device
-        create_response = client.post("/devices", json=device_data)
-        assert create_response.status_code == 200
-        device_id = create_response.json()["id"]
+# Test getting a device
+def test_get_device():
+    device_data = {
+        "name": "Living Room TV",
+        "type": "TV",
+        "room_id": "room123"
+    }
 
-        # Get device
-        get_response = client.get(f"/devices/{device_id}")
-        assert get_response.status_code == 200
-        data = get_response.json()
-        assert data["id"] == device_id
-        assert data["name"] == device_data["name"]
+    # Create device
+    create_response = client.post("/devices", json=device_data)
+    assert create_response.status_code == 200
+    device_id = create_response.json()["id"]
 
-    # Test updating a device
-    def test_update_device():
-        device_data = {
-            "name": "Living Room TV",
-            "type": "Sony TV",
-            "room_id": "room123"
-        }
+    # Get device
+    get_response = client.get(f"/devices/{device_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["id"] == device_id
+    assert data["name"] == device_data["name"]
 
-        # Create device
-        create_response = client.post("/devices", json=device_data)
-        assert create_response.status_code == 200
-        device_id = create_response.json()["id"]
+# Test updating a device
+def test_update_device():
+    device_data = {
+        "name": "Living Room TV",
+        "type": "Sony TV",
+        "room_id": "room123"
+    }
 
-        updated_data = {
-            "id": device_id,
-            "name": "Living Room TV",
-            "type": "Samsung TV",
-            "room_id": "room4"
-        }
-        
-        # Update device
-        update_response = client.put(f"/devices/{device_id}", json=updated_data)
-        assert update_response.status_code == 200
-        updated_device = update_response.json()
-        assert updated_device["room_id"] == "room4"
-        assert updated_device["type"] == "Samsung TV"
+    # Create device
+    create_response = client.post("/devices", json=device_data)
+    assert create_response.status_code == 200
+    device_id = create_response.json()["id"]
 
-    # Test deleting a device
-    def test_delete_device():
-        device_data = {
-            "name": "Living Room TV",
-            "type": "TV",
-            "room_id": "room123"
-        }
+    updated_data = {
+        "id": device_id,
+        "name": "Living Room TV",
+        "type": "Samsung TV",
+        "room_id": "room4"
+    }
+    
+    # Update device
+    update_response = client.put(f"/devices/{device_id}", json=updated_data)
+    assert update_response.status_code == 200
+    updated_device = update_response.json()
+    assert updated_device["room_id"] == "room4"
+    assert updated_device["type"] == "Samsung TV"
 
-        # Create device
-        create_response = client.post("/devices", json=device_data)
-        assert create_response.status_code == 200
-        device_id = create_response.json()["id"]
+# Test deleting a device
+def test_delete_device():
+    device_data = {
+        "name": "Living Room TV",
+        "type": "TV",
+        "room_id": "room123"
+    }
 
-        # Delete device 
-        delete_response = client.delete(f"/devices/{device_id}")
-        assert delete_response.status_code == 200
-        assert delete_response.json() == {"message": "Device deleted successfully"}
+    # Create device
+    create_response = client.post("/devices", json=device_data)
+    assert create_response.status_code == 200
+    device_id = create_response.json()["id"]
 
-        # Verify device is deleted
-        get_response = client.get(f"/devices/{device_id}")
-        assert get_response.status_code == 404
+    # Delete device 
+    delete_response = client.delete(f"/devices/{device_id}")
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {"message": "Device deleted successfully"}
+
+    # Verify device is deleted
+    get_response = client.get(f"/devices/{device_id}")
+    assert get_response.status_code == 404
+
+
+
+## ROOM TESTS ##
+# Test creating a room
+def test_create_room():
+    room_data = {
+        "name": "Master Bedroom",
+        "type": "Bedroom",
+        "size": 200,
+        "house_id": "house123"
+    }
+    
+    # Create room
+    response = client.post("/rooms", json=room_data)
+    assert response.status_code == 200 
+
+    data = response.json()
+    assert "id" in data
+    assert data["name"] == room_data["name"]
+    assert data["type"] == room_data["type"]
+    assert data["size"] == room_data["size"]
+    assert data["house_id"] == room_data["house_id"]
+
+# Test getting a room
+def test_get_room():
+    room_data = {
+        "name": "Master Bedroom",
+        "type": "Bedroom",
+        "size": 200,
+        "house_id": "house123"
+    }
+
+    # Create room
+    create_response = client.post("/rooms", json=room_data)
+    assert create_response.status_code == 200
+    room_id = create_response.json()["id"]
+
+    # Get room
+    get_response = client.get(f"/rooms/{room_id}")
+    assert get_response.status_code == 200
+    data = get_response.json()
+    assert data["id"] == room_id
+    assert data["name"] == room_data["name"]
+
+# Test updating a room
+def test_update_room():
+    room_data = {
+        "name": "Guest Bedroom",
+        "type": "Bedroom",
+        "size": 200,
+        "house_id": "house123"
+    }
+
+    # Create room
+    create_response = client.post("/rooms", json=room_data)
+    assert create_response.status_code == 200
+    room_id = create_response.json()["id"]
+
+    updated_data = {
+        "id": room_id,
+        "name": "Master Bedroom",
+        "type": "Bedroom",
+        "size": 312.5,
+        "house_id": "house123"
+    }
+    
+    # Update room
+    update_response = client.put(f"/rooms/{room_id}", json=updated_data)
+    assert update_response.status_code == 200
+    updated_room = update_response.json()
+    assert updated_room["name"] == "Master bedroom"
+    assert updated_room["size"] == 312.5
+
+# Test deleting a room
+def test_delete_room():
+    room_data = {
+        "name": "Master Bedroom",
+        "type": "Bedroom",
+        "size": 200,
+        "house_id": "house123"
+    }
+
+    # Create room
+    create_response = client.post("/rooms", json=room_data)
+    assert create_response.status_code == 200
+    room_id = create_response.json()["id"]
+
+    # Delete room
+    delete_response = client.delete(f"/rooms/{room_id}")
+    assert delete_response.status_code == 200
+    assert delete_response.json() == {"message": "Room deleted successfully"}
+
+    # Verify room is deleted
+    get_response = client.get(f"/rooms/{room_id}")
+    assert get_response.status_code == 404 
