@@ -9,7 +9,7 @@ app = FastAPI()
 class User(BaseModel):
     id: str
     name: str = Field(min_length=1, description="User's full name")
-    phone_number: str = Field(min_length=12, max_length=12,description="Phone number in format XXX-XXX-XXXX")
+    phone_number: str = Field(min_length=10, max_length=10,description="Phone number in format XXXXXXXXXX")
     email: EmailStr # Validates email address
 
 ## DATA STORAGE
@@ -40,12 +40,12 @@ def get_user(user_id: str):
 
     return users[user_id]
 
-# Update user information (for stub it just copies a different user)
+# Update user information
 @app.put("/users/{user_id}", response_model=User)
 def update_user(user_id: str, updated_user: User):
 
     if user_id not in users:
         raise HTTPException(status_code=404, detail="User not found")
 
-    users[user_id] = updated_user
+    users[user_id] = updated_user # Copy user passed to function
     return updated_user
