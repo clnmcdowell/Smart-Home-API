@@ -50,3 +50,13 @@ def update_user(user_id: str, updated_user: User):
 
     users[user_id] = updated_user # Copy user passed to function
     return updated_user
+
+# Delete user by ID
+@app.delete("/users/{user_id}")
+def delete_user(user_id: str):
+    
+    if user_id not in users:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    del users[user_id]
+    return {"message": "User deleted successfully"}
