@@ -1,13 +1,14 @@
 from fastapi import FastAPI,  HTTPException # API framework
 from pydantic import BaseModel, Field, EmailStr # Validation library
 import uuid
+from typing import Optional
 
 app = FastAPI()
 
 ## CLASSES
 
 class User(BaseModel):
-    id: str
+    id: Optional[str] = None
     name: str = Field(min_length=1, description="User's full name")
     phone_number: str = Field(min_length=10, max_length=10,description="Phone number in format XXXXXXXXXX")
     email: EmailStr # Validates email address
